@@ -28,7 +28,8 @@ step 2: generate a room with the "generate room" button.
 
 step 3: use your freecam to move above the join trigger at stump 
 
-[image](https://github.com/user-attachments/assets/9e6330f4-e039-42b1-9420-a937a95a003e)
+![image](https://github.com/user-attachments/assets/112f4c43-65a4-4e29-8d26-7317dbf69ef5)
+
 
 step 4: press the "Leave Room" button.
 
