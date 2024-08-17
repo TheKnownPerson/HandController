@@ -26,9 +26,10 @@ step 1: make sure your gamemode is selected  to "MODDED CASUAL" if not then set 
 
 step 2: generate a room with the "generate room" button.
 
-step 3: use your freecam to move above the join trigger at stump 
+step 3: use your freecam to move above the join trigger at stump(just like the added example)
 
-![image](https://github.com/user-attachments/assets/112f4c43-65a4-4e29-8d26-7317dbf69ef5)
+![image](https://github.com/user-attachments/assets/de7ddeb5-66e6-4fbf-b5af-0c4e28131ccb)
+
 
 
 step 4: press the "Leave Room" button.
