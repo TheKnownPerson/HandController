@@ -21,7 +21,7 @@ D: Right movement
 A: Left Movement
 
 
-Hold your left mouse button to turn your perspective horizontally and vertically!
+Hold your left mouse button and move it around to turn your perspective horizontally and vertically!
 
 ## How do I join rooms?
 planning to add a new feature that makes you join random lobbies but you'll have to do this at the moment:
@@ -39,4 +39,9 @@ step 3: use your freecam to move above the join trigger at stump(just like the a
 step 4: press the "Leave Room" button.
 
 step 5: Wait until you join a room and you're done.
+
+# Known issues
+spams tons of NFE's(NullReferenceExpectations) errors into the console if not in a code.
+
+send bug reports to my discord: knownperson_
 
