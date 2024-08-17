@@ -416,19 +416,8 @@ namespace GorillaTagModTemplateProject
 
                     if (PhotonNetwork.CurrentRoom != null)
                     {
-                        GUI.Label(new Rect(buttonX, Screen.height - 140, 170, 20), "Room: " + PhotonNetwork.CurrentRoom.Name);
-                        if (PhotonNetwork.CurrentRoom.IsVisible)
-                        {
-                            GUI.Label(new Rect(buttonX, Screen.height - 120, 1250f, 20), "Room Props: Public: " + "Yes, " + "Who is master?: " + PhotonNetwork.MasterClient);
-                        }
-                        else
-                        {
-                            GUI.Label(new Rect(buttonX, Screen.height - 120, 1250f, 20), "Room Props: Public: " + "No, " + "Who is master?: " + PhotonNetwork.MasterClient);
-                        }
-                    }
-                    {             //because as you can see they are labels
-
-                        GUI.Label(new Rect(buttonX, Screen.height - 110, 170, 20), "Player count: " + PhotonNetwork.CurrentRoom.PlayerCount);
+                        GUI.Label(new Rect(buttonX, Screen.height - 140, 170, 20), "Room: " + PhotonNetwork.CurrentRoom.Name);   
+                        GUI.Label(new Rect(buttonX, Screen.height - 120, 170, 20), "Player count: " + PhotonNetwork.CurrentRoom.PlayerCount);
                     }
                     return;
                 }
