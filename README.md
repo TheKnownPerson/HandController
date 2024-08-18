@@ -5,7 +5,7 @@ HandController is a freecam and hand control mod that is supposed to be used for
 It's a mod for PC!
 
 ![image](https://github.com/user-attachments/assets/02ced825-99d5-4141-a38e-4a24736a8e6c)
-# Compatibility
+## Compatibility
 
 this mod is not compatible with any mods that change your perspective on your desktop.
 ## What does it do?
