@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BepInEx;
+using Fusion;
 using GorillaNetworking;
 using OVR.OpenVR;
 using Photon.Pun;
@@ -106,6 +107,10 @@ namespace GorillaTagModTemplateProject
                     else
                     {
                         keyPressed = false;
+                    }
+                    if (!inRoom && PhotonNetwork.InRoom)
+                    {
+                        NetworkSystem.Instance.ReturnToSinglePlayer();
                     }
                     if (HandRFollower == null && HandLFollower == null)
                     {
