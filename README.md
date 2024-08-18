@@ -43,7 +43,8 @@ step 4: press the "Leave Room" button.
 step 5: Wait until you join a room and you're done.
 
 # Known issues
+Your skill if you don't use it
+
 spams tons of NFE's(NullReferenceExpectations) errors into the console if not in a code.
 
-send bug reports to my discord: knownperson_
-
+send bug reports to my discord: ben.exe8137
