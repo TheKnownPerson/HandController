@@ -11,7 +11,6 @@ using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
-using UniverseLib.Input;
 using Utilla;
 
 namespace GorillaTagModTemplateProject
@@ -39,7 +38,6 @@ namespace GorillaTagModTemplateProject
         private float rotationX = 0f;
         private float rotationY = 0f;
         private bool vrheadset;
-        Vector3 previousMousePosition;
         private bool keyPressed = false;
         bool toggled = true;
         bool inRoom;
@@ -192,7 +190,6 @@ namespace GorillaTagModTemplateProject
 
                                 GorillaTagger.Instance.mainCamera.transform.localRotation = Quaternion.Euler(rotationX, rotationY, 0f);
                             }
-                            previousMousePosition = InputManager.MousePosition;
                             GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
 
                             GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = (GorillaTagger.Instance.offlineVRRig.transform.up * 0.073f) * GorillaLocomotion.Player.Instance.scale;
