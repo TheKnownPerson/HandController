@@ -71,7 +71,7 @@ namespace GorillaTagModTemplateProject
             HarmonyPatches.RemoveHarmonyPatches();
         }
 
-        void OnGameInitialized(object sender, EventArgs e)
+       void OnGameInitialized(object sender, EventArgs e)
         {
             var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
             SubsystemManager.GetInstances(xrDisplaySubsystems);
