@@ -11,6 +11,13 @@ this mod is not compatible with any mods that change your perspective on your de
 ## What does it do?
 This Mod adds: a Freecam, the possibility to use your mouse to click on buttons, Hand movement, Leave, Join codes, Generate a random private room, toggle comp lobbies on and off and it adds labels that display the roomcode and the playercount.
 
+## Why is my UI not showing up?
+Your UI not showing up could have several reasons following
+
+reason 1: Your SteamVR probably is still trying to connect to the VR headset or is connected to it. How to fix it: Close SteamVR if your VR headset isn't connected.
+
+reason 2: Your HideManagerGameObject is set to false Scroll down to find how to fix it(Why are my modded room options not showing up?)
+
 ## How do I open the UI?
 Press the TAB key on your keyboard.
 
@@ -26,6 +33,11 @@ A: Left Movement
 
 
 Hold your left mouse button and move it around to turn your perspective horizontally and vertically!
+
+## Why can't I join non moddeds?
+
+The mod doesn't allow you to join non moddeds because it's to prevent room hopping and cheating.
+this mod only allows you to join non moddeds when it's disabled or when a vr is connected.
 
 ## Why do my modded room options not show up?
 
