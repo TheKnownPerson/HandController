@@ -27,6 +27,34 @@ A: Left Movement
 
 Hold your left mouse button and move it around to turn your perspective horizontally and vertically!
 
+## Why do my modded room options not show up?
+
+It's because the bepinex config automatically sets HideManagerGameObject to false, you wanna set that to true and I will guide you through it:
+
+Step 1: Go to your steam library and press on gorilla tag.
+
+Step 2: Click on the settings icon and do as shown in the picture
+
+![image](https://github.com/user-attachments/assets/a68cc9b9-bb6f-41c9-9913-704c47b61142)
+
+Step 3: Click on Browse local files in the Manage category
+
+Step 4: Once you're in the Gorilla Tag folder look for the BepInEx folder
+
+Step 5: If you found it click on it a config folder in the BepInEx folder should show up, click on it.
+
+Step 6: Search for BepInEx.cfg if you found it open it up with a text editor like Editor, Wordpard etc...
+
+Step 7: press the control and f key at the same time a similar window should show up that looks like this
+
+![image](https://github.com/user-attachments/assets/3d955247-1e6d-47c8-98ee-eba2675295d0)
+
+Step 8: Search for HideManagerGameObject in the "Search for" bar
+ 
+Step 9: If set on false set it to true, you can leave the default value alone.
+
+You're done
+
 ## How do I join rooms?
 planning to add a new feature that makes you join random lobbies but you'll have to do this at the moment:
 
