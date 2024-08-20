@@ -18,6 +18,8 @@ reason 1: Your SteamVR probably is still trying to connect to the VR headset or 
 
 reason 2: Your HideManagerGameObject is set to false Scroll down to find how to fix it(Why are my modded room options not showing up?)
 
+## Don't get stuck in the wall
+
 ## How do I open the UI?
 Press the TAB key on your keyboard.
 
