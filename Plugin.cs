@@ -135,7 +135,7 @@ namespace GorillaTagModTemplateProject
                                 Vector3 mousePosition = UnityInput.Current.mousePosition;
                                 Ray ray = Camera.main.ScreenPointToRay(mousePosition);
                                 RaycastHit hit;
-                                if (Physics.Raycast(ray, out hit, raycastDistance))
+                                if (Physics.Raycast(ray, out hit, raycastDistance, GorillaLocomotion.Player.Instance.locomotionEnabledLayers))
                                 {
                                     HandRFollower.transform.position = hit.point;
                                     GorillaTagger.Instance.rightHandTransform.position = HandRFollower.transform.position;
@@ -148,7 +148,7 @@ namespace GorillaTagModTemplateProject
                                 Vector3 mousePosition = UnityInput.Current.mousePosition;
                                 Ray ray = Camera.main.ScreenPointToRay(mousePosition);
                                 RaycastHit hit;
-                                if (Physics.Raycast(ray, out hit, raycastDistance))
+                                if (Physics.Raycast(ray, out hit, raycastDistance, GorillaLocomotion.Player.Instance.locomotionEnabledLayers))
                                 {
                                     HandLFollower.transform.position = hit.point;
                                     GorillaTagger.Instance.leftHandTransform.position = HandLFollower.transform.position;
@@ -228,11 +228,11 @@ namespace GorillaTagModTemplateProject
                             {
                                 LayerMask layerMask = LayerMask.GetMask(new string[]
                                 {
-                "Gorilla Trigger",
-                "Zone",
-                "Gorilla Body"
+                                "Gorilla Trigger",
+                                "Zone",
+                                "Gorilla Body"
                                 });
-
+                       
                                 bool activeInHierarchy = GorillaTagger.Instance.thirdPersonCamera.activeInHierarchy;
                                 Ray ray;
                                 if (activeInHierarchy)
@@ -244,7 +244,7 @@ namespace GorillaTagModTemplateProject
                                     ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
                                 }
 
-                                RaycastHit raycastHit = new RaycastHit(); // Initialize the variable
+                                RaycastHit raycastHit = new RaycastHit();
                                 if (CustomRaycast(ray, ref raycastHit, 5f, ~layerMask))
                                 {
                                     GorillaTagger.Instance.leftHandTriggerCollider.transform.position = raycastHit.point;
@@ -270,7 +270,6 @@ namespace GorillaTagModTemplateProject
         private async Task Rejoin()
         {
             string code = NetworkSystem.Instance.RoomName;
-            Debug.Log(code);
 
             if (NetworkSystem.Instance.InRoom)
             {
@@ -284,7 +283,6 @@ namespace GorillaTagModTemplateProject
         private async Task Generate()
         {
             string code = null;
-            Debug.Log(code);
 
             if (NetworkSystem.Instance.InRoom)
             {
@@ -374,7 +372,6 @@ namespace GorillaTagModTemplateProject
                         if (GUI.Button(new Rect(300f, Screen.height - 200f, buttonWidth, buttonHeight), "Go Comp"))
                         {
                             GorillaComputer.instance.currentQueue = "COMPETITIVE";
-                            Debug.Log(GorillaComputer.instance.currentQueue);
                         }
                     }
                     else
@@ -382,11 +379,26 @@ namespace GorillaTagModTemplateProject
                         if (GUI.Button(new Rect(300f, Screen.height - 200f, buttonWidth, buttonHeight), "Go Default"))
                         {
                             GorillaComputer.instance.currentQueue = "DEFAULT";
-                            Debug.Log(GorillaComputer.instance.currentQueue);
                         }
                     }
                     roomCode = GUI.TextArea(new Rect(buttonX, Screen.height - 170f, buttonWidth, buttonHeight), roomCode, 10);
-           
+                    if (GorillaComputer.instance.currentGameMode.Value != "MODDED_CASUAL")
+                    {
+                        if (inRoom)
+                        {
+                            if (GUI.Button(new Rect(480f, Screen.height - 170f, buttonWidth, buttonHeight), "Set mode to Modded casual"))
+                            {
+                                GorillaComputer.instance.currentGameMode.Value = "MODDED_CASUAL";
+                            }
+                        }
+                        else
+                        {
+                            if (GUI.Button(new Rect(300f, Screen.height - 170f, buttonWidth, buttonHeight), "Set mode to Modded casual"))
+                            {
+                                GorillaComputer.instance.currentGameMode.Value = "MODDED_CASUAL";
+                            }
+                        }
+                    }
                     if (NetworkSystem.Instance.InRoom)
                     {
                         if (GUI.Button(new Rect(buttonX, Screen.height - 260f, buttonWidth, buttonHeight), "Rejoin"))
