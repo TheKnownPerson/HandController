@@ -70,7 +70,7 @@ You're done
 ## How do I join rooms?
 planning to add a new feature that makes you join random lobbies but you'll have to do this at the moment:
 
-step 1: make sure your gamemode is selected  to "MODDED CASUAL" if not then set it to it with your VR headset.
+step 1: If your game mode isn't set to modded casual use the new button that says "switch mode to modded casual"
 
 step 2: generate a room with the "generate room" button.
 
