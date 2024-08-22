@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BepInEx;
-using Fusion;
 using GorillaNetworking;
-using OVR.OpenVR;
 using Photon.Pun;
-using Photon.Realtime;
-using Photon.Voice;
+using Photon.Voice.PUN;
 using UnityEngine;
-using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
 using Utilla;
@@ -31,7 +27,13 @@ namespace GorillaTagModTemplateProject
         public float raycastDistance = 1f;
         private bool ui = false;
         public static string roomCode = "";
-        public static string Username = "";
+        private static string emptycodecheck = "Join Room";
+        private bool thumbsup = true;
+        private bool pushtotalk;
+        private bool cooldown = false;
+        private bool midfinger = true;
+        private Vector3 prevpos;
+        private bool boxing = true;
         private bool HandStatus = true;
         private float speed = 10f;
         private bool fc = false;
@@ -71,7 +73,7 @@ namespace GorillaTagModTemplateProject
             HarmonyPatches.RemoveHarmonyPatches();
         }
 
-       void OnGameInitialized(object sender, EventArgs e)
+        void OnGameInitialized(object sender, EventArgs e)
         {
             var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
             SubsystemManager.GetInstances(xrDisplaySubsystems);
@@ -135,7 +137,7 @@ namespace GorillaTagModTemplateProject
                                 Vector3 mousePosition = UnityInput.Current.mousePosition;
                                 Ray ray = Camera.main.ScreenPointToRay(mousePosition);
                                 RaycastHit hit;
-                                if (Physics.Raycast(ray, out hit, raycastDistance, GorillaLocomotion.Player.Instance.locomotionEnabledLayers))
+                                if (Physics.Raycast(ray, out hit, raycastDistance))
                                 {
                                     HandRFollower.transform.position = hit.point;
                                     GorillaTagger.Instance.rightHandTransform.position = HandRFollower.transform.position;
@@ -148,7 +150,7 @@ namespace GorillaTagModTemplateProject
                                 Vector3 mousePosition = UnityInput.Current.mousePosition;
                                 Ray ray = Camera.main.ScreenPointToRay(mousePosition);
                                 RaycastHit hit;
-                                if (Physics.Raycast(ray, out hit, raycastDistance, GorillaLocomotion.Player.Instance.locomotionEnabledLayers))
+                                if (Physics.Raycast(ray, out hit, raycastDistance))
                                 {
                                     HandLFollower.transform.position = hit.point;
                                     GorillaTagger.Instance.leftHandTransform.position = HandLFollower.transform.position;
@@ -169,7 +171,7 @@ namespace GorillaTagModTemplateProject
                     {
                         if (fc)
                         {
-                            
+
                             if (Keyboard.current.wKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.forward * Time.deltaTime * speed * GorillaLocomotion.Player.Instance.scale;
 
                             if (Keyboard.current.sKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.forward * Time.deltaTime * -speed * GorillaLocomotion.Player.Instance.scale;
@@ -197,7 +199,147 @@ namespace GorillaTagModTemplateProject
                             GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
 
                             GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = (GorillaTagger.Instance.offlineVRRig.transform.up * 0.073f) * GorillaLocomotion.Player.Instance.scale;
-                          
+
+                        }
+                        if (HandStatus)
+                        {
+                            if (Keyboard.current.lKey.wasPressedThisFrame)
+                            {
+                                if (thumbsup)
+                                {
+                                    midfinger = true;
+                                    thumbsup = false;
+                                    boxing = true;
+                                    FingerPatch.forceLeftGrip = true;
+                                    FingerPatch.forceLeftTrigger = true;
+                                    FingerPatch.forceRightGrip = true;
+                                    FingerPatch.forceRightTrigger = true;
+                                    if (pushtotalk)
+                                    {
+                                        FingerPatch.forceLeftPrimary = true;
+                                        FingerPatch.forceRightPrimary = true;
+                                    }
+                                    else
+                                    {
+                                        FingerPatch.forceLeftPrimary = false;
+                                        FingerPatch.forceRightPrimary = false;
+                                    }
+                                }
+                                else
+                                {
+                                    boxing = true;
+                                    thumbsup = true;
+                                    midfinger = true;
+                                    FingerPatch.forceLeftGrip = false;
+                                    FingerPatch.forceLeftTrigger = false;
+                                    FingerPatch.forceRightGrip = false;
+                                    FingerPatch.forceRightTrigger = false;
+                                    if (pushtotalk)
+                                    {
+                                        FingerPatch.forceLeftPrimary = true;
+                                        FingerPatch.forceRightPrimary = true;
+                                    }
+                                    else
+                                    {
+                                        FingerPatch.forceLeftPrimary = false;
+                                        FingerPatch.forceRightPrimary = false;
+                                    }
+                                }
+                            }
+                            if (Keyboard.current.kKey.wasPressedThisFrame)
+                            {
+                                if (midfinger)
+                                {
+                                    boxing = true;
+                                    thumbsup = true;
+                                    midfinger = false;
+                                    FingerPatch.forceLeftGrip = false;
+                                    FingerPatch.forceLeftTrigger = true;
+                                    FingerPatch.forceRightGrip = false;
+                                    FingerPatch.forceRightTrigger = true;
+                                    if (pushtotalk)
+                                    {
+                                        FingerPatch.forceLeftPrimary = true;
+                                        FingerPatch.forceRightPrimary = true;
+                                    }
+                                    else
+                                    {
+                                        FingerPatch.forceLeftPrimary = false;
+                                        FingerPatch.forceRightPrimary = false;
+                                    }
+                                }
+                                else
+                                {
+                                    boxing = true;
+                                    thumbsup = true;
+                                    midfinger = true;
+                                    FingerPatch.forceLeftGrip = false;
+                                    FingerPatch.forceLeftTrigger = false;
+                                    FingerPatch.forceRightGrip = false;
+                                    FingerPatch.forceRightTrigger = false;
+                                    if (pushtotalk)
+                                    {
+                                        FingerPatch.forceLeftPrimary = true;
+                                        FingerPatch.forceRightPrimary = true;
+                                    }
+                                    else
+                                    {
+                                        FingerPatch.forceLeftPrimary = false;
+                                        FingerPatch.forceRightPrimary = false;
+                                    }
+                                }
+                            }
+                            if (Keyboard.current.jKey.wasPressedThisFrame)
+                            {
+                                if (boxing)
+                                {
+                                    thumbsup = true; midfinger = true;
+                                    boxing = false;
+                                    FingerPatch.forceLeftGrip = true;
+                                    FingerPatch.forceLeftTrigger = true;
+                                    FingerPatch.forceRightGrip = true;
+                                    FingerPatch.forceRightTrigger = true;
+                                    FingerPatch.forceLeftPrimary = true;
+                                    FingerPatch.forceRightPrimary = true;
+                                }
+                                else
+                                {
+                                    thumbsup = true; midfinger = true;
+                                    boxing = true;
+                                    FingerPatch.forceLeftGrip = false;
+                                    FingerPatch.forceLeftTrigger = false;
+                                    FingerPatch.forceRightGrip = false;
+                                    FingerPatch.forceRightTrigger = false;
+                                    if (pushtotalk)
+                                    {
+                                        FingerPatch.forceLeftPrimary = true;
+                                        FingerPatch.forceRightPrimary = true;
+                                    }
+                                    else
+                                    {
+                                        FingerPatch.forceLeftPrimary = false;
+                                        FingerPatch.forceRightPrimary = false;
+                                    }
+                                }
+                            }
+                            if (Keyboard.current.pKey.wasPressedThisFrame)
+                            {
+                                if (!pushtotalk && PhotonVoiceNetwork.Instance.PrimaryRecorder.TransmitEnabled == false)
+                                {
+                                    pushtotalk = true;
+                                    FingerPatch.forceLeftPrimary = true;
+                                    FingerPatch.forceRightPrimary = true;
+                                }
+                            }
+                            if (Keyboard.current.pKey.wasReleasedThisFrame && PhotonVoiceNetwork.Instance.PrimaryRecorder.TransmitEnabled == true)
+                            {
+                                if (pushtotalk)
+                                {
+                                    pushtotalk = false;
+                                    FingerPatch.forceLeftPrimary = false;
+                                    FingerPatch.forceRightPrimary = false;
+                                }
+                            }
                         }
                     }
                 }
@@ -224,33 +366,33 @@ namespace GorillaTagModTemplateProject
                 {
                     if (UiClick)
                     {
-                            if (Mouse.current.leftButton.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame)
+                        if (Mouse.current.leftButton.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame)
+                        {
+                            LayerMask layerMask = LayerMask.GetMask(new string[]
                             {
-                                LayerMask layerMask = LayerMask.GetMask(new string[]
-                                {
                                 "Gorilla Trigger",
                                 "Zone",
                                 "Gorilla Body"
-                                });
-                       
-                                bool activeInHierarchy = GorillaTagger.Instance.thirdPersonCamera.activeInHierarchy;
-                                Ray ray;
-                                if (activeInHierarchy)
-                                {
-                                    ray = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>().ScreenPointToRay(Mouse.current.position.ReadValue());
-                                }
-                                else
-                                {
-                                    ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-                                }
+                            });
 
-                                RaycastHit raycastHit = new RaycastHit();
-                                if (CustomRaycast(ray, ref raycastHit, 5f, ~layerMask))
-                                {
-                                    GorillaTagger.Instance.leftHandTriggerCollider.transform.position = raycastHit.point;
-
-                                }
+                            bool activeInHierarchy = GorillaTagger.Instance.thirdPersonCamera.activeInHierarchy;
+                            Ray ray;
+                            if (activeInHierarchy)
+                            {
+                                ray = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>().ScreenPointToRay(Mouse.current.position.ReadValue());
                             }
+                            else
+                            {
+                                ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+                            }
+
+                            RaycastHit raycastHit = new RaycastHit();
+                            if (CustomRaycast(ray, ref raycastHit, 5f, ~layerMask))
+                            {
+                                GorillaTagger.Instance.leftHandTriggerCollider.transform.position = raycastHit.point;
+
+                            }
+                        }
                     }
                 }
             }
@@ -356,7 +498,7 @@ namespace GorillaTagModTemplateProject
                             if (inRoom)
                             {
                                 UiClick = GUI.Toggle(new Rect(300f, Screen.height - 260f, 120f, 30), UiClick, "Toggle UI Click");
-                            }   
+                            }
                             else
                             {
                                 UiClick = GUI.Toggle(new Rect(300f, Screen.height - 230f, 120f, 30), UiClick, "Toggle UI Click");
@@ -381,7 +523,6 @@ namespace GorillaTagModTemplateProject
                             GorillaComputer.instance.currentQueue = "DEFAULT";
                         }
                     }
-                    roomCode = GUI.TextArea(new Rect(buttonX, Screen.height - 170f, buttonWidth, buttonHeight), roomCode, 10);
                     if (GorillaComputer.instance.currentGameMode.Value != "MODDED_CASUAL")
                     {
                         if (inRoom)
@@ -398,6 +539,25 @@ namespace GorillaTagModTemplateProject
                                 GorillaComputer.instance.currentGameMode.Value = "MODDED_CASUAL";
                             }
                         }
+
+                    }
+                    if (!PhotonNetwork.InRoom && !cooldown)
+                    {
+                        if (GorillaComputer.instance.currentGameMode.Value != "MODDED_CASUAL")
+                        {
+                            if (GUI.Button(new Rect(480f, Screen.height - 200f, buttonWidth, buttonHeight), "Join Random"))
+                            {
+                                _ = joinrandom();
+
+                            }
+                        }
+                        else
+                        {
+                            if (GUI.Button(new Rect(300f, Screen.height - 170f, buttonWidth, buttonHeight), "Join Random"))
+                            {
+                               _ = joinrandom();
+                            }
+                        }
                     }
                     if (NetworkSystem.Instance.InRoom)
                     {
@@ -410,13 +570,24 @@ namespace GorillaTagModTemplateProject
                     {
                         _ = Generate();
                     }
-                    if (GUI.Button(new Rect(buttonX, Screen.height - 200f, buttonWidth, buttonHeight), "Join Room"))
+                        roomCode = GUI.TextArea(new Rect(buttonX, Screen.height - 170f, buttonWidth, buttonHeight), roomCode, 10);
+                    if (GUI.Button(new Rect(buttonX, Screen.height - 200f, buttonWidth, buttonHeight), emptycodecheck))
                     {
-                        if (PhotonNetwork.InRoom)
-                        {
-                            NetworkSystem.Instance.ReturnToSinglePlayer();
+                        if (roomCode != "")
+                            {
+                            emptycodecheck = "Join Room";
+                            if (PhotonNetwork.InRoom)
+                            {
+                                NetworkSystem.Instance.ReturnToSinglePlayer();
+                            }
+                            PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(roomCode, GorillaNetworking.JoinType.Solo);
                         }
-                        PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(roomCode, GorillaNetworking.JoinType.Solo);
+                        else
+                        {
+                            emptycodecheck = "empty room!";
+                           _ = wait3000();
+                        }
+
                     }
                     if (PhotonNetwork.InRoom)
                     {
@@ -429,7 +600,7 @@ namespace GorillaTagModTemplateProject
 
                     if (PhotonNetwork.CurrentRoom != null)
                     {
-                        GUI.Label(new Rect(buttonX, Screen.height - 140, 170, 20), "Room: " + PhotonNetwork.CurrentRoom.Name);   
+                        GUI.Label(new Rect(buttonX, Screen.height - 140, 170, 20), "Room: " + PhotonNetwork.CurrentRoom.Name);
                         GUI.Label(new Rect(buttonX, Screen.height - 120, 170, 20), "Player count: " + PhotonNetwork.CurrentRoom.PlayerCount);
                     }
                     return;
@@ -444,7 +615,28 @@ namespace GorillaTagModTemplateProject
                 return;
             }
         }
-
+        private async Task wait3000()
+        {
+            await Task.Delay(3000);
+            emptycodecheck = "Join Room";
+        }
+        private async Task joinrandom()
+        {
+            Transform root = GameObject.Find("Environment Objects").transform;
+            Transform obeject = root.Find("LocalObjects_Prefab").transform;
+            obeject.gameObject.SetActive(false);
+            GorillaComputer.instance.currentGameMode.Value = "MODDED_CASUAL";
+            GorillaTagger.Instance.bodyCollider.transform.GetComponent<CapsuleCollider>().enabled = false;
+            prevpos = GorillaTagger.Instance.mainCamera.transform.position;
+            cooldown = true;
+                        GorillaTagger.Instance.mainCamera.transform.position = new Vector3(-66.706f, 11.8304f, -78.8302f);
+            await Task.Delay(500);
+            obeject.gameObject.SetActive(true);
+            GorillaTagger.Instance.mainCamera.transform.position = prevpos;
+            GorillaTagger.Instance.bodyCollider.transform.GetComponent<CapsuleCollider>().enabled = true;
+            await Task.Delay(5000);
+            cooldown = false;
+        }
         private Color GetCyclingColor()
         {
             float t = Time.time;
