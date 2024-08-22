@@ -194,8 +194,10 @@ namespace GorillaTagModTemplateProject
 
                                 rotationX = Mathf.Clamp(rotationX, -90f, 90f);
 
+                                GorillaTagger.Instance.offlineVRRig.headConstraint.transform.localEulerAngles = new Vector3(rotationX, 0, 0);
                                 GorillaTagger.Instance.mainCamera.transform.localRotation = Quaternion.Euler(rotationX, rotationY, 0f);
                             }
+
                             GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
 
                             GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = (GorillaTagger.Instance.offlineVRRig.transform.up * 0.073f) * GorillaLocomotion.Player.Instance.scale;
@@ -341,6 +343,37 @@ namespace GorillaTagModTemplateProject
                                 }
                             }
                         }
+                        else
+                        {
+                            thumbsup = false; midfinger = false;
+                            boxing = true;
+                            FingerPatch.forceLeftGrip = false;
+                            FingerPatch.forceLeftTrigger = false;
+                            FingerPatch.forceRightGrip = false;
+                            FingerPatch.forceRightTrigger = false;
+                            if (Keyboard.current.pKey.wasPressedThisFrame)
+                            {
+                                if (!pushtotalk && PhotonVoiceNetwork.Instance.PrimaryRecorder.TransmitEnabled == false)
+                                {
+                                    pushtotalk = true;
+                                    FingerPatch.forceLeftPrimary = true;
+                                    FingerPatch.forceRightPrimary = true;
+                                }
+                            }
+                            if (Keyboard.current.pKey.wasReleasedThisFrame && PhotonVoiceNetwork.Instance.PrimaryRecorder.TransmitEnabled == true)
+                            {
+                                if (pushtotalk)
+                                {
+                                    pushtotalk = false;
+                                    FingerPatch.forceLeftPrimary = false;
+                                    FingerPatch.forceRightPrimary = false;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        GorillaTagger.Instance.mainCamera.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
                     }
                 }
                 else
