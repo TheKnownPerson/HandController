@@ -50,6 +50,9 @@ K: to flip people off
 J: to make a fist
 
 
+L: thumbs up
+
+
 Push to talk is compatible just make sure it's on and then hold P to talk!
 
 
