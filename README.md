@@ -10,7 +10,7 @@ It's a mod for PC!
 ## Compatibility
 this mod is not compatible with any mods that change your perspective on your desktop.
 ## What does it do?
-This Mod adds: a Freecam, the possibility to use your mouse to click on buttons, Hand movement, Leave, Join codes, Generate a random private room, toggle comp lobbies on and off and it adds labels that display the roomcode and the playercount.
+This Mod adds: a Freecam, the possibility to use your mouse to click on buttons, Hand movement, Leave, Join codes, Generate a random private room, toggle comp lobbies on and off, Xray, TP, Gravity  and it adds labels that display the roomcode and the playercount.
 
 
 ## Why is my UI not showing up?
