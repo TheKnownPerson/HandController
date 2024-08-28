@@ -29,3 +29,4 @@ push to talk now works without handmovement on
 
 Xray, TP, Gravity options added.
 Thirdperson perspective can be toggled with F5
+It also adds 2 new labels that display the room and player count in your region
