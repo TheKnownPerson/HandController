@@ -22,3 +22,10 @@ Head tilts when moving cursor up and down(only works in moddeds with freecam on)
 
 
 push to talk now works without handmovement on
+
+
+# V0.5
+
+
+Xray, TP, Gravity options added.
+Thirdperson perspective can be toggled with F5
