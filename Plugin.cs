@@ -13,6 +13,7 @@ using Utilla;
 
 namespace GorillaTagModTemplateProject
 {
+    // what the sigma
     /// <summary>
     /// This is your mod's main class.
     /// </summary>
