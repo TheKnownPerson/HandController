@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using BepInEx;
 using GorillaNetworking;
@@ -36,11 +37,15 @@ namespace GorillaTagModTemplateProject
         private bool boxing = true;
         private bool HandStatus = true;
         private float speed = 10f;
+        private bool f5 = false;
         private bool fc = false;
         private bool UiClick = true;
+        private bool tp = false;
+        private bool gravity = false;
         private float rotationX = 0f;
         private float rotationY = 0f;
         private bool vrheadset;
+        private bool Xray = false;
         private bool keyPressed = false;
         bool toggled = true;
         bool inRoom;
@@ -65,6 +70,7 @@ namespace GorillaTagModTemplateProject
 
         void OnDisable()
         {
+
             toggled = false;
             /* Undo mod setup here */
             /* This provides support for toggling mods with ComputerInterface, please implement it :) */
@@ -72,9 +78,9 @@ namespace GorillaTagModTemplateProject
 
             HarmonyPatches.RemoveHarmonyPatches();
         }
-
         void OnGameInitialized(object sender, EventArgs e)
         {
+            PhotonNetwork.PhotonServerSettings.AppSettings.AppVersion = this.version;
             var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
             SubsystemManager.GetInstances(xrDisplaySubsystems);
 
@@ -91,11 +97,28 @@ namespace GorillaTagModTemplateProject
                 Debug.Log("\r\n░█████╗░░█████╗░███╗░░██╗████████╗██████╗░░█████╗░██╗░░░░░██╗░░░░░███████╗██████╗░\r\n██╔══██╗██╔══██╗████╗░██║╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██║░░░░░██╔════╝██╔══██╗\r\n██║░░╚═╝██║░░██║██╔██╗██║░░░██║░░░██████╔╝██║░░██║██║░░░░░██║░░░░░█████╗░░██████╔╝\r\n██║░░██╗██║░░██║██║╚████║░░░██║░░░██╔══██╗██║░░██║██║░░░░░██║░░░░░██╔══╝░░██╔══██╗\r\n╚█████╔╝╚█████╔╝██║░╚███║░░░██║░░░██║░░██║╚█████╔╝███████╗███████╗███████╗██║░░██║\r\n░╚════╝░░╚════╝░╚═╝░░╚══╝░░░╚═╝░░░╚═╝░░╚═╝░╚════╝░╚══════╝╚══════╝╚══════╝╚═╝░░╚═╝");
             }
         }
+        private string version = File.ReadAllText("version.txt");
 
         void Update()
         {
             if (!vrheadset)
             {
+                if (toggled)
+                {
+                    if (Keyboard.current.f5Key.wasPressedThisFrame)
+                    {
+                        if (f5)
+                        {
+                            f5 = false;
+                            GorillaTagger.Instance.thirdPersonCamera.SetActive(f5);
+                        }
+                        else
+                        {
+                            f5 = true;
+                            GorillaTagger.Instance.thirdPersonCamera.SetActive(f5);
+                        }
+                    }
+                }
                 if (toggled == true)
                 {
                     if (Keyboard.current.tabKey.isPressed)
@@ -123,7 +146,7 @@ namespace GorillaTagModTemplateProject
                         if (inRoom != true)
                         {
 
-                            GorillaTagger.Instance.thirdPersonCamera.SetActive(true);
+                            GorillaTagger.Instance.thirdPersonCamera.SetActive(f5);
                             HandRFollower.SetActive(inRoom);
                             HandLFollower.SetActive(inRoom);
                         }
@@ -133,9 +156,17 @@ namespace GorillaTagModTemplateProject
                             HandLFollower.SetActive(inRoom);
                             if (UnityInput.Current.GetMouseButton(1))
                             {
-
                                 Vector3 mousePosition = UnityInput.Current.mousePosition;
-                                Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+                                Ray ray;
+                                bool activeInHierarchy = GorillaTagger.Instance.thirdPersonCamera.activeInHierarchy;
+                                if (activeInHierarchy)
+                                {
+                                    ray = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>().ScreenPointToRay(Mouse.current.position.ReadValue());
+                                }
+                                else
+                                {
+                                    ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+                                }
                                 RaycastHit hit;
                                 if (Physics.Raycast(ray, out hit, raycastDistance))
                                 {
@@ -146,9 +177,17 @@ namespace GorillaTagModTemplateProject
                             }
                             if (UnityInput.Current.GetMouseButton(0))
                             {
-
                                 Vector3 mousePosition = UnityInput.Current.mousePosition;
-                                Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+                                Ray ray;
+                                bool activeInHierarchy = GorillaTagger.Instance.thirdPersonCamera.activeInHierarchy;
+                                if (activeInHierarchy)
+                                {
+                                    ray = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>().ScreenPointToRay(Mouse.current.position.ReadValue());
+                                }
+                                else
+                                {
+                                    ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+                                }
                                 RaycastHit hit;
                                 if (Physics.Raycast(ray, out hit, raycastDistance))
                                 {
@@ -169,6 +208,28 @@ namespace GorillaTagModTemplateProject
                     }
                     if (inRoom)
                     {
+                        if (tp)
+                        {
+                            if (Mouse.current.leftButton.wasReleasedThisFrame)
+                            {
+                                Vector3 mousePosition = UnityInput.Current.mousePosition;
+                                Ray ray;
+                                bool activeInHierarchy = GorillaTagger.Instance.thirdPersonCamera.activeInHierarchy;
+                                if (activeInHierarchy)
+                                {
+                                    ray = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>().ScreenPointToRay(Mouse.current.position.ReadValue());
+                                }
+                                else
+                                {
+                                    ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+                                }
+                                RaycastHit hit;
+                                if (Physics.Raycast(ray, out hit, 100f))
+                                {
+                                    GorillaLocomotion.Player.Instance.transform.position = hit.point + new Vector3(0f, 1f, 0f);
+                                }
+                            }
+                        }
                         if (fc)
                         {
 
@@ -197,10 +258,12 @@ namespace GorillaTagModTemplateProject
                                 GorillaTagger.Instance.offlineVRRig.headConstraint.transform.localEulerAngles = new Vector3(rotationX, 0, 0);
                                 GorillaTagger.Instance.mainCamera.transform.localRotation = Quaternion.Euler(rotationX, rotationY, 0f);
                             }
+                            if (!gravity)
+                            {
+                                GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
 
-                            GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
-
-                            GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = (GorillaTagger.Instance.offlineVRRig.transform.up * 0.073f) * GorillaLocomotion.Player.Instance.scale;
+                                GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = (GorillaTagger.Instance.offlineVRRig.transform.up * 0.0715f) * GorillaLocomotion.Player.Instance.scale;
+                            }   
 
                         }
                         if (HandStatus)
@@ -370,9 +433,49 @@ namespace GorillaTagModTemplateProject
                                 }
                             }
                         }
+                        if (Xray && PhotonNetwork.InRoom)
+                        {
+                            Transform main = GameObject.Find("Environment Objects/LocalObjects_Prefab/").transform;
+                            Transform main2 = main.Find("Forest").transform;
+                            Transform treeroom = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/").transform;
+                            MeshRenderer[] visibilitycomponents = main2.GetComponentsInChildren<MeshRenderer>();
+                            MeshRenderer[] treeroomcompo = treeroom.GetComponentsInChildren<MeshRenderer>();
+                            foreach (MeshRenderer visible in visibilitycomponents)
+                            {
+                                visible.enabled = false;
+                            }
+                            foreach (MeshRenderer trvis in treeroomcompo)
+                            {
+                                trvis.enabled = false;
+                            }
+                        }
+                        else
+                        {
+                            Xray = false;
+                            Transform main = GameObject.Find("Environment Objects/LocalObjects_Prefab/").transform;
+                            Transform main2 = main.Find("Forest").transform;
+                            Transform treeroom = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/").transform;
+                            MeshRenderer[] visibilitycomponents = main2.GetComponentsInChildren<MeshRenderer>();
+                            treeroom.Find("sky jungle entrance 2/").GetComponent<MeshRenderer>().SafeDestroy();
+                            MeshRenderer[] treeroomcompo = treeroom.GetComponentsInChildren<MeshRenderer>();
+                            foreach (MeshRenderer visible in visibilitycomponents)
+                            {
+                                visible.enabled = true;
+                            }
+                            foreach (MeshRenderer trvis in treeroomcompo)
+                            {
+                                trvis.enabled = true;
+                            }
+                        }
                     }
                     else
                     {
+                        tp = false;
+                        fc = false;
+                        if (!inRoom && PhotonNetwork.InRoom)
+                        {
+                            gravity = true;
+                        }
                         GorillaTagger.Instance.mainCamera.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
                     }
                 }
@@ -387,7 +490,16 @@ namespace GorillaTagModTemplateProject
                     {
                         return;
                     }
-
+                    tp = false;
+                    Xray = false;
+                    midfinger = true;
+                    boxing = false;
+                    thumbsup = true;
+                    fc = false;
+                    HandStatus = false;
+                    ui = false;
+                    gravity = true;
+                        
                 }
             }
         }
@@ -506,6 +618,7 @@ namespace GorillaTagModTemplateProject
                                     HandStatus = true;
                                 }
                             }
+                            tp = GUI.Toggle(new Rect(480f, Screen.height - 210f, 120f, 15f), tp, "TP(modded)");
                             if (!fc)
                             {
                                 if (GUI.Button(new Rect(300f, Screen.height - 230f, buttonWidth, buttonHeight), "Turn Freecam on"))
@@ -520,11 +633,8 @@ namespace GorillaTagModTemplateProject
                                     fc = false;
                                 }
                             }
-
-                        }
-                        else
-                        {
-                            fc = false;
+                          Xray = GUI.Toggle(new Rect(480f, Screen.height - 230f, 120f, 20f), Xray, "Xray(modded)");
+                            gravity = GUI.Toggle(new Rect(480f, Screen.height - 190f, 120f, 20f), gravity, "Gravity");
                         }
                         if (!fc)
                         {
@@ -636,6 +746,8 @@ namespace GorillaTagModTemplateProject
                         GUI.Label(new Rect(buttonX, Screen.height - 140, 170, 20), "Room: " + PhotonNetwork.CurrentRoom.Name);
                         GUI.Label(new Rect(buttonX, Screen.height - 120, 170, 20), "Player count: " + PhotonNetwork.CurrentRoom.PlayerCount);
                     }
+                    GUI.Label(new Rect(buttonX, Screen.height - 100, 300, 20), "Live regional player count: " + PhotonNetwork.CountOfPlayers);
+                    GUI.Label(new Rect(buttonX, Screen.height - 80, 300, 20), "Live regional Room count: " + PhotonNetwork.CountOfRooms);
                     return;
                 }
                 else
@@ -660,12 +772,12 @@ namespace GorillaTagModTemplateProject
             obeject.gameObject.SetActive(false);
             GorillaComputer.instance.currentGameMode.Value = "MODDED_CASUAL";
             GorillaTagger.Instance.bodyCollider.transform.GetComponent<CapsuleCollider>().enabled = false;
-            prevpos = GorillaTagger.Instance.mainCamera.transform.position;
+            prevpos = GorillaLocomotion.Player.Instance.transform.position;
             cooldown = true;
-                        GorillaTagger.Instance.mainCamera.transform.position = new Vector3(-66.706f, 11.8304f, -78.8302f);
+                        GorillaLocomotion.Player.Instance.transform.position = new Vector3(-66.706f, 11.8304f, -78.8302f);
             await Task.Delay(500);
             obeject.gameObject.SetActive(true);
-            GorillaTagger.Instance.mainCamera.transform.position = prevpos;
+            GorillaLocomotion.Player.Instance.transform.position = prevpos;
             GorillaTagger.Instance.bodyCollider.transform.GetComponent<CapsuleCollider>().enabled = true;
             await Task.Delay(5000);
             cooldown = false;
@@ -684,10 +796,10 @@ namespace GorillaTagModTemplateProject
         {
             if (!vrheadset)
             {
-                inRoom = true;
-                GorillaTagger.Instance.thirdPersonCamera.SetActive(false);
                 if (toggled == true)
                 {
+                    inRoom = true;
+                    GorillaTagger.Instance.thirdPersonCamera.SetActive(f5);
                     if (HandRFollower)
                     {
                         HandRFollower.SetActive(inRoom);
@@ -742,14 +854,17 @@ namespace GorillaTagModTemplateProject
         {
             if (!vrheadset)
             {
-                inRoom = false;
-                if (HandRFollower != null && HandLFollower != null && GorillaTagger.Instance.thirdPersonCamera != null)
+                if (toggled)
                 {
-                    HandRFollower.SetActive(inRoom);
-                    HandLFollower.SetActive(inRoom);
-                    GorillaTagger.Instance.thirdPersonCamera.SetActive(true);
+                    inRoom = false;
+                    if (HandRFollower != null && HandLFollower != null && GorillaTagger.Instance.thirdPersonCamera != null)
+                    {
+                        HandRFollower.SetActive(inRoom);
+                        HandLFollower.SetActive(inRoom);
+                        GorillaTagger.Instance.thirdPersonCamera.SetActive(f5);
 
 
+                    }
                 }
             }
         }
