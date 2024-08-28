@@ -55,6 +55,7 @@ L: thumbs up
 
 Push to talk is compatible just make sure it's on and then hold P to talk!
 
+F5 to toggle Third person
 
 Hold your left mouse button and move it around to turn your perspective horizontally and vertically!
 
