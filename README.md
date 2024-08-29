@@ -7,6 +7,13 @@ It's a mod for PC!
 
 
 ![image](https://github.com/user-attachments/assets/02ced825-99d5-4141-a38e-4a24736a8e6c)
+
+# JOIN
+
+
+## https://discord.gg/F5HckvbJMG
+
+
 ## Compatibility
 this mod is not compatible with any mods that change your perspective on your desktop.
 ## What does it do?
@@ -131,5 +138,5 @@ step 5: Wait until you join a room and you're done.
 # Known issues
 Your skill if you don't use it
 
-
-send bug reports to my discord: knownperson_
+send bug reports to the discord
+[](https://discord.gg/F5HckvbJMG)](https://discord.gg/F5HckvbJMG)
