@@ -138,5 +138,8 @@ step 5: Wait until you join a room and you're done.
 # Known issues
 Your skill if you don't use it
 
+
 send bug reports to the discord
-[](https://discord.gg/F5HckvbJMG)](https://discord.gg/F5HckvbJMG)
+
+
+[https://discord.gg/F5HckvbJMG](https://discord.gg/F5HckvbJMG)
