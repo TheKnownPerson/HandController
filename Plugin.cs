@@ -13,7 +13,6 @@ using Utilla;
 
 namespace GorillaTagModTemplateProject
 {
-    // what the sigma
     /// <summary>
     /// This is your mod's main class.
     /// </summary>
@@ -33,6 +32,7 @@ namespace GorillaTagModTemplateProject
         private bool thumbsup = true;
         private bool pushtotalk;
         private bool cooldown = false;
+        // yes
         private bool midfinger = true;
         private Vector3 prevpos;
         private bool boxing = true;
@@ -81,7 +81,6 @@ namespace GorillaTagModTemplateProject
         }
         void OnGameInitialized(object sender, EventArgs e)
         {
-            PhotonNetwork.PhotonServerSettings.AppSettings.AppVersion = this.version;
             var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
             SubsystemManager.GetInstances(xrDisplaySubsystems);
 
@@ -98,7 +97,6 @@ namespace GorillaTagModTemplateProject
                 Debug.Log("\r\n░█████╗░░█████╗░███╗░░██╗████████╗██████╗░░█████╗░██╗░░░░░██╗░░░░░███████╗██████╗░\r\n██╔══██╗██╔══██╗████╗░██║╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██║░░░░░██╔════╝██╔══██╗\r\n██║░░╚═╝██║░░██║██╔██╗██║░░░██║░░░██████╔╝██║░░██║██║░░░░░██║░░░░░█████╗░░██████╔╝\r\n██║░░██╗██║░░██║██║╚████║░░░██║░░░██╔══██╗██║░░██║██║░░░░░██║░░░░░██╔══╝░░██╔══██╗\r\n╚█████╔╝╚█████╔╝██║░╚███║░░░██║░░░██║░░██║╚█████╔╝███████╗███████╗███████╗██║░░██║\r\n░╚════╝░░╚════╝░╚═╝░░╚══╝░░░╚═╝░░░╚═╝░░╚═╝░╚════╝░╚══════╝╚══════╝╚══════╝╚═╝░░╚═╝");
             }
         }
-        private string version = File.ReadAllText("version.txt");
 
         void Update()
         {
@@ -134,10 +132,10 @@ namespace GorillaTagModTemplateProject
                     {
                         keyPressed = false;
                     }
-                    if (!inRoom && PhotonNetwork.InRoom)
+                     if (!inRoom && PhotonNetwork.InRoom)
                     {
                         NetworkSystem.Instance.ReturnToSinglePlayer();
-                    }
+                    } 
                     if (HandRFollower == null && HandLFollower == null)
                     {
                         return;
