@@ -47,6 +47,7 @@ namespace GorillaTagModTemplateProject
         private float rotationY = 0f;
         private bool vrheadset;
         private bool Xray = false;
+        private bool pausecolor = false;
         private bool keyPressed = false;
         bool toggled = true;
         bool inRoom;
@@ -591,7 +592,7 @@ namespace GorillaTagModTemplateProject
                     float buttonY = Screen.height - 210f;
 
                     Color originalColor = GUI.color;
-                    GUI.color = GetCyclingColor();
+                        GUI.color = GetCyclingColor();
                     GUI.Label(new Rect(215f, Screen.height - 170f, buttonWidth, buttonHeight), "Code to join");
                     // GUI.Label(new Rect(485f, Screen.height - 170f, buttonWidth, buttonHeight), "Change your name");
                     /* Username = GUI.TextArea(new Rect(300f, Screen.height - 170f, buttonWidth, buttonHeight), Username, maxLength: 12);
@@ -631,9 +632,24 @@ namespace GorillaTagModTemplateProject
                                 {
                                     fc = false;
                                 }
+                                gravity = GUI.Toggle(new Rect(480f, Screen.height - 190f, 120f, 20f), gravity, "Gravity");
                             }
                           Xray = GUI.Toggle(new Rect(480f, Screen.height - 230f, 120f, 20f), Xray, "Xray(modded)");
-                            gravity = GUI.Toggle(new Rect(480f, Screen.height - 190f, 120f, 20f), gravity, "Gravity");
+                        }
+                        if (!inRoom)
+                        {
+                            pausecolor = GUI.Toggle(new Rect(480f, Screen.height - 190f, 150f, 20f), pausecolor, "Stop Color Cycle");
+                        }
+                        else
+                        {
+                            if (fc)
+                            {
+                                pausecolor = GUI.Toggle(new Rect(480f, Screen.height - 250f, 150f, 20f), pausecolor, "Stop Color Cycle");
+                            }
+                            else
+                            {
+                                pausecolor = GUI.Toggle(new Rect(480f, Screen.height - 190f, 150f, 20f), pausecolor, "Stop Color Cycle");
+                            }
                         }
                         if (!fc)
                         {
@@ -781,13 +797,18 @@ namespace GorillaTagModTemplateProject
             await Task.Delay(5000);
             cooldown = false;
         }
+        private Color currentColor = Color.white;
         private Color GetCyclingColor()
         {
-            float t = Time.time;
-            float r = Mathf.Sin(t * 2f) * 0.5f + 0.5f;
-            float g = Mathf.Sin(t * 2f + Mathf.PI / 3f) * 0.5f + 0.5f;
-            float b = Mathf.Sin(t * 2f + 2f * Mathf.PI / 3f) * 0.5f + 0.5f;
-            return new Color(r, g, b);
+            if (!pausecolor)
+            {
+                float t = Time.time;
+                float r = Mathf.Sin(t * 2f) * 0.5f + 0.5f;
+                float g = Mathf.Sin(t * 2f + Mathf.PI / 3f) * 0.5f + 0.5f;
+                float b = Mathf.Sin(t * 2f + 2f * Mathf.PI / 3f) * 0.5f + 0.5f;
+                currentColor = new Color(r, g, b);
+            }
+            return currentColor;
         }
         /* This attribute tells Utilla to call this method when a modded room is joined */
         [ModdedGamemodeJoin]
