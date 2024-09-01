@@ -34,3 +34,8 @@ It also adds 2 new labels that display the room and player count in your region
 # V0.51 Patch
 
 Fixed no players found issue
+
+# V0.52 
+
+added a stop color cycle option
+small update thats why 0.52
