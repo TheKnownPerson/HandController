@@ -28,7 +28,9 @@ push to talk now works without handmovement on
 
 
 Xray, TP, Gravity options added.
+
 Thirdperson perspective can be toggled with F5
+
 It also adds 2 new labels that display the room and player count in your region
 
 # V0.51 Patch
@@ -38,11 +40,15 @@ Fixed no players found issue
 # V0.52 
 
 added a stop color cycle option
+
 small update thats why 0.52
 
 # V0.6
 
 scoreboard
+
 new mode(air handmovement)
+
 airhandmovement to make your hands be able to move in the air
+
 maybe big update idk
