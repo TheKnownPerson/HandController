@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using BepInEx;
 using GorillaNetworking;
 using Photon.Pun;
 using Photon.Voice.PUN;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 using UnityEngine.XR;
 using Utilla;
 
@@ -25,19 +28,28 @@ namespace GorillaTagModTemplateProject
     {
         public GameObject HandRFollower;
         public GameObject HandLFollower;
-        public float raycastDistance = 1f;
+        /* public Transform MetaR;
+         public Transform MetaL; */ // adding for a future update to implement Meta Software VR hand controls.
+        public float raycastDistance = 1.02f;
         private bool ui = false;
         public static string roomCode = "";
+        int airLayer = LayerMask.NameToLayer("AirLayer");
         private static string emptycodecheck = "Join Room";
         private bool thumbsup = true;
+        private float minwalldistance = 0.475f;
+        private float maxwalldistance = 0.9f;
         private bool pushtotalk;
+        private float speedMultiplier = 1f;
         private bool cooldown = false;
-        // yes
         private bool midfinger = true;
+        public GameObject air;
+        private bool toggleair = false;
         private Vector3 prevpos;
         private bool boxing = true;
         private bool HandStatus = true;
-        private float speed = 10f;
+        private float minspeed = 0f;
+        private bool speedmode = true;
+        private float maxspeed = 1000f;
         private bool f5 = false;
         private bool fc = false;
         private bool UiClick = true;
@@ -46,20 +58,21 @@ namespace GorillaTagModTemplateProject
         private float rotationX = 0f;
         private float rotationY = 0f;
         private bool vrheadset;
+        public float sensitivity = 0.000100f;
+        float scrollValue = Mouse.current.scroll.y.ReadValue();
         private bool Xray = false;
         private bool pausecolor = false;
         private bool keyPressed = false;
+        private GUIStyle lblstyle;
         bool toggled = true;
         bool inRoom;
 
         void Start()
         {
-            Debug.LogWarning("checking for XR rendering activity");
-            /* A lot of Gorilla Tag systems will not be set up when start is called
-            /* Put code in OnGameInitialized to avoid null references */
+            lblstyle = new GUIStyle(GUI.skin.label);
+            lblstyle.fontSize = 21;
             Utilla.Events.GameInitialized += OnGameInitialized;
         }
-
 
         void OnEnable()
         {
@@ -94,8 +107,6 @@ namespace GorillaTagModTemplateProject
             {
                 vrheadset = false;
                 Debug.LogWarning("[HandController] XR rendering activity not found activating HandController");
-                Debug.Log("\r\n██╗░░██╗░█████╗░███╗░░██╗██████╗░\r\n██║░░██║██╔══██╗████╗░██║██╔══██╗\r\n███████║███████║██╔██╗██║██║░░██║\r\n██╔══██║██╔══██║██║╚████║██║░░██║\r\n██║░░██║██║░░██║██║░╚███║██████╔╝\r\n╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═════╝░");
-                Debug.Log("\r\n░█████╗░░█████╗░███╗░░██╗████████╗██████╗░░█████╗░██╗░░░░░██╗░░░░░███████╗██████╗░\r\n██╔══██╗██╔══██╗████╗░██║╚══██╔══╝██╔══██╗██╔══██╗██║░░░░░██║░░░░░██╔════╝██╔══██╗\r\n██║░░╚═╝██║░░██║██╔██╗██║░░░██║░░░██████╔╝██║░░██║██║░░░░░██║░░░░░█████╗░░██████╔╝\r\n██║░░██╗██║░░██║██║╚████║░░░██║░░░██╔══██╗██║░░██║██║░░░░░██║░░░░░██╔══╝░░██╔══██╗\r\n╚█████╔╝╚█████╔╝██║░╚███║░░░██║░░░██║░░██║╚█████╔╝███████╗███████╗███████╗██║░░██║\r\n░╚════╝░░╚════╝░╚═╝░░╚══╝░░░╚═╝░░░╚═╝░░╚═╝░╚════╝░╚══════╝╚══════╝╚══════╝╚═╝░░╚═╝");
             }
         }
 
@@ -119,7 +130,7 @@ namespace GorillaTagModTemplateProject
                         }
                     }
                 }
-                if (toggled == true)
+                if (toggled)
                 {
                     if (Keyboard.current.tabKey.isPressed)
                     {
@@ -133,10 +144,10 @@ namespace GorillaTagModTemplateProject
                     {
                         keyPressed = false;
                     }
-                     if (!inRoom && PhotonNetwork.InRoom)
+                    if (!inRoom && PhotonNetwork.InRoom)
                     {
                         NetworkSystem.Instance.ReturnToSinglePlayer();
-                    } 
+                    }
                     if (HandRFollower == null && HandLFollower == null)
                     {
                         return;
@@ -172,7 +183,6 @@ namespace GorillaTagModTemplateProject
                                 {
                                     HandRFollower.transform.position = hit.point;
                                     GorillaTagger.Instance.rightHandTransform.position = HandRFollower.transform.position;
-
                                 }
                             }
                             if (UnityInput.Current.GetMouseButton(0))
@@ -233,18 +243,76 @@ namespace GorillaTagModTemplateProject
                         if (fc)
                         {
 
-                            if (Keyboard.current.wKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.forward * Time.deltaTime * speed * GorillaLocomotion.Player.Instance.scale;
 
-                            if (Keyboard.current.sKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.forward * Time.deltaTime * -speed * GorillaLocomotion.Player.Instance.scale;
+                            if (Keyboard.current.wKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.forward * Time.deltaTime * minspeed * GorillaLocomotion.Player.Instance.scale * speedMultiplier;
 
-                            if (Keyboard.current.dKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.right * Time.deltaTime * speed * GorillaLocomotion.Player.Instance.scale;
+                            if (Keyboard.current.sKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.forward * Time.deltaTime * -minspeed * GorillaLocomotion.Player.Instance.scale * speedMultiplier;
 
-                            if (Keyboard.current.aKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.right * Time.deltaTime * -speed * GorillaLocomotion.Player.Instance.scale;
+                            if (Keyboard.current.dKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.right * Time.deltaTime * minspeed * GorillaLocomotion.Player.Instance.scale * speedMultiplier;
 
-                            if (Keyboard.current.spaceKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.up * Time.deltaTime * speed * GorillaLocomotion.Player.Instance.scale;
+                            if (Keyboard.current.aKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.right * Time.deltaTime * -minspeed * GorillaLocomotion.Player.Instance.scale * speedMultiplier;
 
-                            if (Keyboard.current.ctrlKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.up * Time.deltaTime * -speed * GorillaLocomotion.Player.Instance.scale;
+                            if (Keyboard.current.spaceKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.up * Time.deltaTime * minspeed * GorillaLocomotion.Player.Instance.scale * speedMultiplier;
 
+                            if (Keyboard.current.ctrlKey.isPressed) GorillaLocomotion.Player.Instance.transform.position += GorillaTagger.Instance.headCollider.transform.up * Time.deltaTime * -minspeed * GorillaLocomotion.Player.Instance.scale * speedMultiplier;
+
+                            if (toggleair)
+                            {
+                                if (air == null)
+                                {
+                                    UnityEngine.Color custom = new UnityEngine.Color(215f / 255f, 206f / 255f, 255f / 255f);
+                                    air = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                                    air.transform.rotation = GorillaTagger.Instance.mainCamera.transform.rotation;
+                                    air.transform.localPosition = GorillaTagger.Instance.mainCamera.transform.position + GorillaTagger.Instance.mainCamera.transform.forward * minwalldistance;
+                                    air.transform.localScale = new Vector3(200, 200, 0.05f);
+                                    air.transform.GetComponent<Renderer>().material = new Material(Shader.Find("Sprites/Default")); //debug
+                                    air.transform.GetComponent<BoxCollider>().enabled = true;
+                                    air.layer = airLayer;
+                                    if (air.transform.GetComponent<Renderer>().enabled)
+                                    {
+                                        air.transform.GetComponent<Renderer>().enabled = false;
+                                    }
+                                    air.transform.name = "airwall";
+                                    air.transform.GetComponent<Renderer>().material.color = custom; //debug
+                                    toggleair = true;
+
+                                }
+                                if (air != null & toggleair)
+                                {
+                                    if (Keyboard.current.f5Key.wasPressedThisFrame && Keyboard.current.f6Key.wasPressedThisFrame)
+                                    {
+                                        if (!air.transform.GetComponent<Renderer>().enabled)
+                                        {
+                                            air.transform.GetComponent<Renderer>().enabled = true;
+                                        }
+                                        else
+                                        {
+                                            air.transform.GetComponent<Renderer>().enabled = false;
+                                        }
+                                    }
+                                    air.transform.rotation = GorillaTagger.Instance.mainCamera.transform.rotation;
+                                    air.transform.localPosition = GorillaTagger.Instance.mainCamera.transform.position + GorillaTagger.Instance.mainCamera.transform.forward * minwalldistance;
+                                }
+                            }
+                            else
+                            {
+                                if (air != null || toggleair)
+                                {
+                                    GameObject.Destroy(air);
+                                    toggleair = false;
+                                    speedmode = true;
+                                    print("desotryed");
+                                }
+                            }
+
+                            if (Keyboard.current.shiftKey.isPressed)
+                            {
+                                speedMultiplier = 3.5f;
+                            }
+                            else
+                            {
+                                speedMultiplier = 1f;
+                            }
                             if (Mouse.current.rightButton.isPressed)
                             {
                                 float mouseX = Mouse.current.delta.x.ReadValue() * 50f * Time.deltaTime;
@@ -263,8 +331,50 @@ namespace GorillaTagModTemplateProject
                                 GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
 
                                 GorillaLocomotion.Player.Instance.transform.GetComponent<Rigidbody>().velocity = (GorillaTagger.Instance.offlineVRRig.transform.up * 0.0715f) * GorillaLocomotion.Player.Instance.scale;
-                            }   
+                            }
+                            if (speedmode)
+                            {
+                                float scrollValue = Mouse.current.scroll.y.ReadValue();
 
+                                if (Mouse.current.scroll.y.ReadValue() > 0f)
+                                {
+                                    minspeed++;
+                                }
+                                else if (Mouse.current.scroll.y.ReadValue() < 0f)
+                                {
+                                    minspeed--;
+                                }
+
+                                minspeed = Mathf.Clamp(minspeed, 0f, maxspeed);
+                                if (minspeed < 0f)
+                                { 
+                                    minspeed = 0f; 
+                                }
+
+                            }
+                            else
+                            {
+                                if (Mouse.current != null)
+                                {
+                                    float scrollValue = Mouse.current.scroll.y.ReadValue();
+                                    float scaledScrollValue = scrollValue * sensitivity;
+                                    minwalldistance += scaledScrollValue;
+                                    minwalldistance = Mathf.Clamp(minwalldistance, 0.475f, maxwalldistance);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (air != null)
+                            {
+                                print("desotryed");
+                                GameObject.Destroy(air);
+                            }
+                            if (toggleair)
+                            {
+                                print("turned off");
+                                toggleair = false;
+                            }
                         }
                         if (HandStatus)
                         {
@@ -499,7 +609,7 @@ namespace GorillaTagModTemplateProject
                     HandStatus = false;
                     ui = false;
                     gravity = true;
-                        
+
                 }
             }
         }
@@ -509,16 +619,11 @@ namespace GorillaTagModTemplateProject
             {
                 if (inRoom)
                 {
+
                     if (UiClick)
                     {
                         if (Mouse.current.leftButton.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame)
                         {
-                            LayerMask layerMask = LayerMask.GetMask(new string[]
-                            {
-                                "Gorilla Trigger",
-                                "Zone",
-                                "Gorilla Body"
-                            });
 
                             bool activeInHierarchy = GorillaTagger.Instance.thirdPersonCamera.activeInHierarchy;
                             Ray ray;
@@ -532,10 +637,28 @@ namespace GorillaTagModTemplateProject
                             }
 
                             RaycastHit raycastHit = new RaycastHit();
-                            if (CustomRaycast(ray, ref raycastHit, 5f, ~layerMask))
-                            {
-                                GorillaTagger.Instance.leftHandTriggerCollider.transform.position = raycastHit.point;
 
+                            if (air != null)
+                            {
+                                if (CustomRaycast(ray, ref raycastHit, 5f, ~(1 << air.layer)))
+                                {
+                                    VRMap hand = GorillaTagger.Instance.offlineVRRig.leftHand;
+                                    GorillaTagger.Instance.leftHandTriggerCollider.transform.position = raycastHit.point;
+                                }
+                            }
+                            else
+                            {
+                                LayerMask layerMask = LayerMask.GetMask(new string[]
+                                {
+                                "Gorilla Trigger",
+                                "Zone",
+                                "Gorilla Body"
+                                });
+                                if (CustomRaycast(ray, ref raycastHit, 5f, ~layerMask))
+                                {
+                                    VRMap hand = GorillaTagger.Instance.offlineVRRig.leftHand;
+                                    GorillaTagger.Instance.leftHandTriggerCollider.transform.position = raycastHit.point;
+                                }
                             }
                         }
                     }
@@ -564,6 +687,7 @@ namespace GorillaTagModTemplateProject
                 NetworkSystem.Instance.ReturnToSinglePlayer();
             }
 
+
             await Task.Delay(3000);
             PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(code, GorillaNetworking.JoinType.Solo);
         }
@@ -579,20 +703,43 @@ namespace GorillaTagModTemplateProject
             await Task.Delay(1000);
             PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(code, GorillaNetworking.JoinType.Solo);
         }
-
+        public Font font;
         void OnGUI()
         {
             if (!vrheadset)
             {
                 if (ui)
                 {
+                    if (toggled)
+                    {
+                        if (inRoom)
+                        {
+                            if (lblstyle == null)
+                            {
+                                lblstyle = new GUIStyle(GUI.skin.label);
+                                lblstyle.fontSize = 20;
+                            }
+                            GUI.Box(new Rect(1760, 0, 160, 240), "");
+                            GUILayout.BeginArea(new Rect(1780, 10, 120, 450));
+                            GUILayout.Label("Scoreboard", style: lblstyle);
+                            if (PhotonNetwork.InRoom)
+                            {
+                                foreach (Photon.Realtime.Player player in PhotonNetwork.PlayerList)
+                                {
+                                    GUILayout.Label(player.NickName);
+                                }
+                            }
+                            GUILayout.EndArea();
+                        }
+                    }
                     float buttonWidth = 180f;
                     float buttonHeight = 30f;
                     float buttonX = 30f;
                     float buttonY = Screen.height - 210f;
 
                     Color originalColor = GUI.color;
-                        GUI.color = GetCyclingColor();
+                    GUI.color = GetCyclingColor();
+
                     GUI.Label(new Rect(215f, Screen.height - 170f, buttonWidth, buttonHeight), "Code to join");
                     // GUI.Label(new Rect(485f, Screen.height - 170f, buttonWidth, buttonHeight), "Change your name");
                     /* Username = GUI.TextArea(new Rect(300f, Screen.height - 170f, buttonWidth, buttonHeight), Username, maxLength: 12);
@@ -632,9 +779,9 @@ namespace GorillaTagModTemplateProject
                                 {
                                     fc = false;
                                 }
-                                gravity = GUI.Toggle(new Rect(480f, Screen.height - 190f, 120f, 20f), gravity, "Gravity");
+                                gravity = GUI.Toggle(new Rect(480f, Screen.height - 190f, 90f, 20f), gravity, "Gravity");
                             }
-                          Xray = GUI.Toggle(new Rect(480f, Screen.height - 230f, 120f, 20f), Xray, "Xray(modded)");
+                            Xray = GUI.Toggle(new Rect(480f, Screen.height - 230f, 120f, 20f), Xray, "Xray(modded)");
                         }
                         if (!inRoom)
                         {
@@ -659,11 +806,34 @@ namespace GorillaTagModTemplateProject
                             }
                             else
                             {
+
                                 UiClick = GUI.Toggle(new Rect(300f, Screen.height - 230f, 120f, 30), UiClick, "Toggle UI Click");
                             }
                         }
                         else
                         {
+                            if (speedmode)
+                            {
+                                if (fc)
+                                {
+                                    if (toggleair)
+                                    {
+                                        if (GUI.Button(new Rect(1650f, Screen.height - 80f, 250, buttonHeight), "Airwall distance mode"))
+                                        {
+                                            speedmode = false;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+
+                                if (GUI.Button(new Rect(1650f, Screen.height - 80f, 250, buttonHeight), "Flying speed mode"))
+                                {
+                                    speedmode = true;
+                                }
+                            }
+                            toggleair = GUI.Toggle(new Rect(480f, Screen.height - 170, 150f, 20f), toggleair, "Air HandMovement");
                             UiClick = GUI.Toggle(new Rect(300f, Screen.height - 260f, 150f, 30), UiClick, "Toggle UI Click");
                         }
                     }
@@ -713,7 +883,7 @@ namespace GorillaTagModTemplateProject
                         {
                             if (GUI.Button(new Rect(300f, Screen.height - 170f, buttonWidth, buttonHeight), "Join Random"))
                             {
-                               _ = joinrandom();
+                                _ = joinrandom();
                             }
                         }
                     }
@@ -728,11 +898,11 @@ namespace GorillaTagModTemplateProject
                     {
                         _ = Generate();
                     }
-                        roomCode = GUI.TextArea(new Rect(buttonX, Screen.height - 170f, buttonWidth, buttonHeight), roomCode, 10);
+                    roomCode = GUI.TextArea(new Rect(buttonX, Screen.height - 170f, buttonWidth, buttonHeight), roomCode, 10);
                     if (GUI.Button(new Rect(buttonX, Screen.height - 200f, buttonWidth, buttonHeight), emptycodecheck))
                     {
                         if (roomCode != "")
-                            {
+                        {
                             emptycodecheck = "Join Room";
                             if (PhotonNetwork.InRoom)
                             {
@@ -743,7 +913,7 @@ namespace GorillaTagModTemplateProject
                         else
                         {
                             emptycodecheck = "empty room!";
-                           _ = wait3000();
+                            _ = wait3000();
                         }
 
                     }
@@ -789,7 +959,7 @@ namespace GorillaTagModTemplateProject
             GorillaTagger.Instance.bodyCollider.transform.GetComponent<CapsuleCollider>().enabled = false;
             prevpos = GorillaLocomotion.Player.Instance.transform.position;
             cooldown = true;
-                        GorillaLocomotion.Player.Instance.transform.position = new Vector3(-66.706f, 11.8304f, -78.8302f);
+            GorillaLocomotion.Player.Instance.transform.position = new Vector3(-66.706f, 11.8304f, -78.8302f);
             await Task.Delay(500);
             obeject.gameObject.SetActive(true);
             GorillaLocomotion.Player.Instance.transform.position = prevpos;
@@ -816,8 +986,12 @@ namespace GorillaTagModTemplateProject
         {
             if (!vrheadset)
             {
-                if (toggled == true)
+                if (toggled)
                 {
+                    if (minspeed == 0)
+                    {
+                        minspeed = 10f;
+                            }
                     inRoom = true;
                     GorillaTagger.Instance.thirdPersonCamera.SetActive(f5);
                     if (HandRFollower)

@@ -7,6 +7,6 @@
 	{
 		public const string GUID = "com.Deactivated.gorillatag.HandPCController";
 		public const string Name = "Hand controller";
-		public const string Version = "1.0.0";
+		public const string Version = "0.6.0";
 	}
 }
