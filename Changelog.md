@@ -42,4 +42,7 @@ small update thats why 0.52
 
 # V0.6
 
+scoreboard
+new mode(air handmovement)
+airhandmovement to make your hands be able to move in the air
 maybe big update idk
