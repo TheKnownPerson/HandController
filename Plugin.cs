@@ -704,6 +704,46 @@ namespace GorillaTagModTemplateProject
             PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(code, GorillaNetworking.JoinType.Solo);
         }
         public Font font;
+        GUIStyle boxstyle;
+        private Texture2D gradientTexture;
+        Texture2D MakeGradientTex(int width, int height, Color startColor, Color endColor)
+        {
+            Texture2D tex = new Texture2D(width, height);
+            Color[] pix = new Color[width * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                float t = (float)y / (height - 1);
+                Color gradientColor = Color.Lerp(startColor, endColor, t);
+
+                for (int x = 0; x < width; x++)
+                {
+                    pix[y * width + x] = gradientColor;
+                }
+            }
+
+            tex.SetPixels(pix);
+            tex.Apply();
+
+            return tex;
+        }
+        void InitializeBoxStyle()
+        {
+            boxstyle = new GUIStyle(GUI.skin.box);
+            gradientTexture = MakeGradientTex(160, 290, new Color(0, 0, 0, 0), GetCyclingColor());
+            boxstyle.normal.background = gradientTexture;
+        }
+
+        void UpdateBoxTexture()
+        {
+            if (gradientTexture != null)
+            {
+                DestroyImmediate(gradientTexture);
+            }
+
+            gradientTexture = MakeGradientTex(160, 290, new Color(0, 0, 0, 0), GetCyclingColor());
+            boxstyle.normal.background = gradientTexture;
+        }
         void OnGUI()
         {
             if (!vrheadset)
@@ -718,8 +758,18 @@ namespace GorillaTagModTemplateProject
                             {
                                 lblstyle = new GUIStyle(GUI.skin.label);
                                 lblstyle.fontSize = 20;
+                                lblstyle.fontStyle = FontStyle.Bold;
                             }
-                            GUI.Box(new Rect(1760, 0, 160, 240), "");
+                            if (boxstyle == null)
+                            {
+                                boxstyle = new GUIStyle(GUI.skin.box);
+                                InitializeBoxStyle();
+                            }
+                            else
+                            {
+                                UpdateBoxTexture();
+                            }
+                            GUI.Box(new Rect(1760, 0, 160, 290), "", style:boxstyle);
                             GUILayout.BeginArea(new Rect(1780, 10, 120, 450));
                             GUILayout.Label("Scoreboard", style: lblstyle);
                             if (PhotonNetwork.InRoom)
