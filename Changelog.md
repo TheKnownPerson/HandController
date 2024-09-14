@@ -39,3 +39,7 @@ Fixed no players found issue
 
 added a stop color cycle option
 small update thats why 0.52
+
+# V0.6
+
+maybe big update idk
