@@ -52,3 +52,7 @@ new mode(air handmovement)
 airhandmovement to make your hands be able to move in the air
 
 maybe big update idk
+
+# V0.61
+
+fixed the players going off of the scoreboard and its rainbow now!
