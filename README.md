@@ -67,6 +67,9 @@ Push to talk is compatible just make sure it's on and then hold P to talk!
 
 F5 to toggle Third person
 
+Scroll wheel at speed mode to change speed.
+Scroll wheel to change air handmovement distance of air handmovement mode.
+
 Hold your left mouse button and move it around to turn your perspective horizontally and vertically!
 
 ## Why can't I join non moddeds?
