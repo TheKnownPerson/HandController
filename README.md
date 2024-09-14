@@ -68,6 +68,7 @@ Push to talk is compatible just make sure it's on and then hold P to talk!
 F5 to toggle Third person
 
 Scroll wheel at speed mode to change speed.
+
 Scroll wheel to change air handmovement distance of air handmovement mode.
 
 Hold your left mouse button and move it around to turn your perspective horizontally and vertically!
@@ -75,6 +76,7 @@ Hold your left mouse button and move it around to turn your perspective horizont
 ## Why can't I join non moddeds?
 
 The mod doesn't allow you to join non moddeds because it's to prevent room hopping and cheating.
+
 this mod only allows you to join non moddeds when it's disabled or when a vr is connected.
 
 ## Why do my modded room options not show up?
