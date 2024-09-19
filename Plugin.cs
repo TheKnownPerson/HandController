@@ -43,6 +43,10 @@ namespace GorillaTagModTemplateProject
         private bool cooldown = false;
         private bool midfinger = true;
         public GameObject air;
+        public Camera cubcam;
+        public Camera cubmirrorcam;
+        public GameObject cub;
+        public string screenshotFilename = "HandCapture";
         private bool toggleair = false;
         private Vector3 prevpos;
         private bool boxing = true;
@@ -69,8 +73,9 @@ namespace GorillaTagModTemplateProject
 
         void Start()
         {
-            lblstyle = new GUIStyle(GUI.skin.label);
-            lblstyle.fontSize = 21;
+            /* A lot of Gorilla Tag systems will not be set up when start is called /*
+			/* Put code in OnGameInitialized to avoid null references */
+
             Utilla.Events.GameInitialized += OnGameInitialized;
         }
 
@@ -109,9 +114,13 @@ namespace GorillaTagModTemplateProject
                 Debug.LogWarning("[HandController] XR rendering activity not found activating HandController");
             }
         }
-
+        GameObject cylindercam;
+        RenderTexture rendertexture;
+        GameObject cubmirror;
+        /* to do: meta software implemantion and change camera perspective to monitor view */
         void Update()
         {
+
             if (!vrheadset)
             {
                 if (toggled)
@@ -129,9 +138,6 @@ namespace GorillaTagModTemplateProject
                             GorillaTagger.Instance.thirdPersonCamera.SetActive(f5);
                         }
                     }
-                }
-                if (toggled)
-                {
                     if (Keyboard.current.tabKey.isPressed)
                     {
                         if (!keyPressed)
@@ -147,6 +153,84 @@ namespace GorillaTagModTemplateProject
                     if (!inRoom && PhotonNetwork.InRoom)
                     {
                         NetworkSystem.Instance.ReturnToSinglePlayer();
+                    }
+                    if (cub == null && cylindercam == null && cubmirror == null)
+                    {
+                        print("CREATED");
+                        cub = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        cubmirror = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        cylindercam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        Renderer renderer = cub.GetComponent<Renderer>();
+                        Renderer renderer1 = cylindercam.GetComponent<Renderer>();
+                        if (renderer == null && renderer1 == null && cubmirror.transform.GetComponent<Renderer>() == null)
+                        {
+                            renderer = cub.AddComponent<Renderer>();
+                            renderer1 = cylindercam.AddComponent<Renderer>();
+                            cubmirror.AddComponent<Renderer>();
+                        }
+                        renderer.material = new Material(Shader.Find("Sprites/Default"));
+                        renderer1.material = new Material(Shader.Find("Sprites/Default"));
+                        cubmirror.transform.GetComponent<Renderer>().material = new Material(Shader.Find("Unlit/Texture"));
+                        Color color = new Color(12f / 255f, 12f / 255f, 12f / 255f);
+                        renderer.material.color = color;
+                        renderer1.material.color = Color.white;
+                        cub.GetComponent<Collider>().enabled = false;
+                        cylindercam.GetComponent<Collider>().enabled = false;
+                        cubmirror.GetComponent<Collider>().enabled = false;
+                        cub.transform.localScale = new Vector3(0.075f, 0.075f, 0.075f);
+                        cubmirror.transform.localScale = new Vector3(1.25f, 1.25f, 0f);
+
+                        cylindercam.transform.localScale = new Vector3(0.2f, 0.05f, 0.2f);
+                        cub.transform.name = "cubcameera";
+                        cylindercam.transform.name = "cylinderforcam";
+                        cub.transform.SetParent(GorillaTagger.Instance.leftHandTriggerCollider.transform, false);
+                        cubmirror.transform.SetParent(cub.transform, false);
+                        cylindercam.transform.SetParent(cub.transform, false);
+                        cub.transform.localPosition = Vector3.zero;
+                        cylindercam.transform.localPosition = Vector3.zero;
+                        cubmirror.transform.localPosition = Vector3.zero;
+                        cub.transform.localRotation = Quaternion.identity;
+                        cylindercam.transform.localRotation = Quaternion.identity;
+                        cubmirror.transform.localRotation = Quaternion.identity;
+
+                        if (cubcam == null)
+                        {
+                            rendertexture = new RenderTexture(256, 256, 16);
+                            cubmirrorcam = cubmirror.AddComponent<Camera>();
+                            cubmirrorcam.targetTexture = rendertexture;
+                            cubmirror.GetComponent<Renderer>().material.mainTexture = rendertexture;
+                            cubcam = cub.AddComponent<Camera>();
+                            cubcam.fieldOfView = 75f;
+                            cubcam.nearClipPlane = 0.1f;
+                            cubcam.enabled = false;
+                            cubcam.tag = "Untagged";
+                            cubcam.clearFlags = CameraClearFlags.Skybox;
+                            cubcam.backgroundColor = Color.black;
+                            cubcam.Render();
+                        }
+                    }
+                    else
+                    {
+                        cylindercam.transform.rotation = cub.transform.rotation * Quaternion.Euler(90, 0, 0);
+                        cylindercam.transform.position = cub.transform.position + cub.transform.forward * 0.04f;
+                        cubmirror.transform.position = cub.transform.position + cub.transform.up * 0.10f;
+                        cubmirror.transform.rotation = cub.transform.rotation;
+                        cub.transform.position = GorillaTagger.Instance.leftHandTriggerCollider.transform.position;
+                        cub.transform.rotation = GorillaTagger.Instance.leftHandTriggerCollider.transform.rotation * Quaternion.Euler(0f, 90f, -32f);
+
+                        bool captureInputDetected = Keyboard.current.cKey.wasPressedThisFrame ||
+                            (ControllerInputPoller.instance.leftControllerSecondaryButton && ControllerInputPoller.instance.rightControllerIndexFloat > 0.9f);
+
+                        if (captureInputDetected && !hasCapturedThisFrame)
+                        {
+                            Capture();
+                            hasCapturedThisFrame = true;
+                        }
+
+                        if (!captureInputDetected)
+                        {
+                            hasCapturedThisFrame = false;
+                        }
                     }
                     if (HandRFollower == null && HandLFollower == null)
                     {
@@ -347,8 +431,8 @@ namespace GorillaTagModTemplateProject
 
                                 minspeed = Mathf.Clamp(minspeed, 0f, maxspeed);
                                 if (minspeed < 0f)
-                                { 
-                                    minspeed = 0f; 
+                                {
+                                    minspeed = 0f;
                                 }
 
                             }
@@ -612,7 +696,91 @@ namespace GorillaTagModTemplateProject
 
                 }
             }
+            else if (vrheadset)
+            {
+                if (toggled)
+                {
+                    if (cub == null && cylindercam == null && cubmirror == null)
+                    {
+                        print("CREATED");
+                        cub = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        cubmirror = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        cylindercam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        Renderer renderer = cub.GetComponent<Renderer>();
+                        Renderer renderer1 = cylindercam.GetComponent<Renderer>();
+                        if (renderer == null && renderer1 == null && cubmirror.transform.GetComponent<Renderer>() == null)
+                        {
+                            renderer = cub.AddComponent<Renderer>();
+                            renderer1 = cylindercam.AddComponent<Renderer>();
+                            cubmirror.AddComponent<Renderer>();
+                        }
+                        renderer.material = new Material(Shader.Find("Sprites/Default"));
+                        renderer1.material = new Material(Shader.Find("Sprites/Default"));
+                        cubmirror.transform.GetComponent<Renderer>().material = new Material(Shader.Find("Unlit/Texture"));
+                        Color color = new Color(12f / 255f, 12f / 255f, 12f / 255f);
+                        renderer.material.color = color;
+                        renderer1.material.color = Color.white;
+                        cub.GetComponent<Collider>().enabled = false;
+                        cylindercam.GetComponent<Collider>().enabled = false;
+                        cubmirror.GetComponent<Collider>().enabled = false;
+                        cub.transform.localScale = new Vector3(0.075f, 0.075f, 0.075f);
+                        cubmirror.transform.localScale = new Vector3(1.5f, 1.5f, 0f);
+
+                        cylindercam.transform.localScale = new Vector3(0.2f, 0.05f, 0.2f);
+                        cub.transform.name = "cubcameera";
+                        cylindercam.transform.name = "cylinderforcam";
+                        cub.transform.SetParent(GorillaTagger.Instance.leftHandTriggerCollider.transform, false);
+                        cubmirror.transform.SetParent(cub.transform, false);
+                        cylindercam.transform.SetParent(cub.transform, false);
+                        cub.transform.localPosition = Vector3.zero;
+                        cylindercam.transform.localPosition = Vector3.zero;
+                        cubmirror.transform.localPosition = Vector3.zero;
+                        cub.transform.localRotation = Quaternion.identity;
+                        cylindercam.transform.localRotation = Quaternion.identity;
+                        cubmirror.transform.localRotation = Quaternion.identity;
+
+                        if (cubcam == null)
+                        {
+                            rendertexture = new RenderTexture(256, 256, 16);
+                            cubmirrorcam = cubmirror.AddComponent<Camera>();
+                            cubmirrorcam.targetTexture = rendertexture;
+                            cubmirror.GetComponent<Renderer>().material.mainTexture = rendertexture;
+                            cubcam = cub.AddComponent<Camera>();
+                            cubcam.fieldOfView = 70f;
+                            cubcam.enabled = false;
+                            cubcam.tag = "Untagged";
+                            cubcam.clearFlags = CameraClearFlags.Skybox;
+                            cubcam.backgroundColor = Color.black;
+                            cubcam.Render();
+                        }
+                    }
+                    else
+                    {
+                        cylindercam.transform.rotation = cub.transform.rotation * Quaternion.Euler(90, 0, 0);
+                        cylindercam.transform.position = cub.transform.position + cub.transform.forward * 0.04f;
+                        cubmirror.transform.position = cub.transform.position + cub.transform.up * 0.10f;
+                        cubmirror.transform.rotation = cub.transform.rotation;
+                        cub.transform.position = GorillaTagger.Instance.leftHandTriggerCollider.transform.position;
+                        cub.transform.rotation = GorillaTagger.Instance.leftHandTriggerCollider.transform.rotation * Quaternion.Euler(0f, 90f, -32f);
+
+                        bool captureInputDetected = Keyboard.current.cKey.wasPressedThisFrame ||
+                            (ControllerInputPoller.instance.leftControllerSecondaryButton && ControllerInputPoller.instance.rightControllerIndexFloat > 0.9f);
+
+                        if (captureInputDetected && !hasCapturedThisFrame)
+                        {
+                            Capture();
+                            hasCapturedThisFrame = true;
+                        }
+
+                        if (!captureInputDetected)
+                        {
+                            hasCapturedThisFrame = false;
+                        }
+                    }
+                }
+            }
         }
+        private bool hasCapturedThisFrame = false;
         private void FixedUpdate()
         {
             if (!vrheadset)
@@ -740,9 +908,50 @@ namespace GorillaTagModTemplateProject
             {
                 DestroyImmediate(gradientTexture);
             }
+            if (!pausecolor)
+            {
+                gradientTexture = MakeGradientTex(160, 290, new Color(0, 0, 0, 0), GetCyclingColor());
+                boxstyle.normal.background = gradientTexture;
+            }
+        }
+        void Capture()
+        {
+            if (cubcam == null)
+            {
+                Debug.LogError("No camera assigned for taking screenshots!");
+                return;
+            }
+            cubcam.enabled = true;
 
-            gradientTexture = MakeGradientTex(160, 290, new Color(0, 0, 0, 0), GetCyclingColor());
-            boxstyle.normal.background = gradientTexture;
+            RenderTexture rt = new RenderTexture(Screen.width, Screen.height, 24);
+            cubcam.targetTexture = rt;
+            RenderTexture.active = rt;
+
+            cubcam.Render();
+
+            Texture2D screenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+            screenshot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
+            screenshot.Apply();
+
+            cubcam.targetTexture = null;
+            RenderTexture.active = null;
+
+            byte[] bytes = screenshot.EncodeToPNG();
+            string gamePath = Application.dataPath.Substring(0, Application.dataPath.LastIndexOf("/"));
+            string bepInExPath = Path.Combine(gamePath, "BepInEx");
+            string filePath = Path.Combine(bepInExPath, $"{screenshotFilename}_{System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.png");
+            System.IO.File.WriteAllBytes(filePath, bytes);
+
+            Debug.Log($"Screenshot saved to: {filePath}");
+           /* if (vrheadset)
+            {
+                cubcam.enabled = true;
+            }
+            else
+            {
+                cubcam.enabled = false;
+            } */
+            cubcam.enabled = false;
         }
         void OnGUI()
         {
@@ -754,6 +963,7 @@ namespace GorillaTagModTemplateProject
                     {
                         if (inRoom)
                         {
+
                             if (lblstyle == null)
                             {
                                 lblstyle = new GUIStyle(GUI.skin.label);
@@ -767,9 +977,12 @@ namespace GorillaTagModTemplateProject
                             }
                             else
                             {
-                                UpdateBoxTexture();
+                                if (!pausecolor)
+                                {
+                                    UpdateBoxTexture();
+                                }
                             }
-                            GUI.Box(new Rect(1760, 0, 160, 290), "", style:boxstyle);
+                            GUI.Box(new Rect(1760, 0, 160, 290), "", style: boxstyle);
                             GUILayout.BeginArea(new Rect(1780, 10, 120, 450));
                             GUILayout.Label("Scoreboard", style: lblstyle);
                             if (PhotonNetwork.InRoom)
@@ -983,7 +1196,6 @@ namespace GorillaTagModTemplateProject
                     }
                     GUI.Label(new Rect(buttonX, Screen.height - 100, 300, 20), "Live regional player count: " + PhotonNetwork.CountOfPlayers);
                     GUI.Label(new Rect(buttonX, Screen.height - 80, 300, 20), "Live regional Room count: " + PhotonNetwork.CountOfRooms);
-                    return;
                 }
                 else
                 {
@@ -992,7 +1204,6 @@ namespace GorillaTagModTemplateProject
                         GUI.Label(new Rect(0f, Screen.height - 20, 170, 20), "Press Tab to open UI");
                     }
                 }
-                return;
             }
         }
         private async Task wait3000()
@@ -1041,7 +1252,7 @@ namespace GorillaTagModTemplateProject
                     if (minspeed == 0)
                     {
                         minspeed = 10f;
-                            }
+                    }
                     inRoom = true;
                     GorillaTagger.Instance.thirdPersonCamera.SetActive(f5);
                     if (HandRFollower)
