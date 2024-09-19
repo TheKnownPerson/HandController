@@ -62,6 +62,7 @@ J: to make a fist
 
 L: thumbs up
 
+PC: C for a photo on camera VR: Y and right trigger for photo on camera
 
 Push to talk is compatible just make sure it's on and then hold P to talk!
 
@@ -78,6 +79,10 @@ Hold your left mouse button and move it around to turn your perspective horizont
 The mod doesn't allow you to join non moddeds because it's to prevent room hopping and cheating.
 
 this mod only allows you to join non moddeds when it's disabled or when a vr is connected.
+
+## Where are my photos saved?
+
+The photos are being saved in your BepInEx folder.
 
 ## Why do my modded room options not show up?
 
