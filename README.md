@@ -147,6 +147,10 @@ step 4: press the "Leave Room" button.
 
 step 5: Wait until you join a room and you're done.
 
+# How do I set up my mic?
+
+You have to change your mic settings to your pc mic on SteamVR settings and windows settings to use your mic on pc.
+
 
 # Known issues
 Your skill if you don't use it
